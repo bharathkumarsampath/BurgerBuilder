@@ -42,12 +42,14 @@
     color: white;
     padding: 5px 8px;
     margin-right: 10px;
+    cursor: pointer;
 }
 
 .BuildControl .More {
     background-color: #8F5E1E;
     color: white;
     padding: 5px 8px;
+    cursor: pointer;
 }
 
 .BuildControl .Less:hover, .BuildControl .Less:active {  
