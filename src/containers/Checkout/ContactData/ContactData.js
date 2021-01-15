@@ -1,9 +1,12 @@
 import React from 'react'
 import Button from '../../../components/UI/Button/Button'
 import classes from './ContactData.module.css'
+import withErrorHandler from '../../../hoc/withErrorHandler/withErrorHandler'
 import axios from '../../../axios-orders'
 import Spinner from '../../../components/UI/Spinner/Spinner'
 import Input from '../../../components/UI/Input/Input'
+import { connect } from 'react-redux'
+import * as actionCreators from '../../../store/actions/index'
 class ContactData extends React.Component{
     state={
         orderForm:{
@@ -87,7 +90,6 @@ class ContactData extends React.Component{
                 validation:{}
             },
         },
-        loading:false,
         formIsValid:false
     }
     checkValidity(value,rules){
@@ -118,20 +120,13 @@ class ContactData extends React.Component{
             formData[formElementIdentifier] = this.state.orderForm[formElementIdentifier].value;
         }
         const orders = {
-            ingredients:this.props.ingredients,
+            ingredients:this.props.ings,
             price:this.props.price,
-            orderData:formData
+            orderData:formData,
+            userId:this.props.userId
         }
-        axios.post('/orders.json',orders)
-            .then(response=>{
-                this.setState({loading:false});
-                console.log(response);
-                this.props.history.push('/');
-            })
-            .catch(error=>{
-                this.setState({loading:false});
-                console.log(error);
-            })
+        this.props.onOrderPlaced(orders,this.props.token);
+        
     }
     inputChangedHandler = (event,inputIdentifier) =>{
         const updatedForm = {
@@ -175,7 +170,7 @@ class ContactData extends React.Component{
             }
         <Button btnType="Success" disabled={!this.state.formIsValid}>ORDER</Button>
     </form>;
-        if(this.state.loading){
+        if(this.props.loading){
             form = <Spinner/>
         }
         return(
@@ -187,4 +182,20 @@ class ContactData extends React.Component{
     }
 }
 
-export default ContactData;
+const mapStateToProps = state => {
+    return {
+        ings:state.burgerBuilder.ingredients,
+        price:state.burgerBuilder.price,
+        loading:state.order.loading,
+        token:state.auth.token,
+        userId:state.auth.userId
+    }
+}
+
+const mapDispatchToProps = dispatch => {
+    return {
+        onOrderPlaced:(orderData,token) => dispatch(actionCreators.purchaseBurger(orderData,token))
+    }
+}
+
+export default connect(mapStateToProps,mapDispatchToProps)(withErrorHandler(ContactData,axios));
